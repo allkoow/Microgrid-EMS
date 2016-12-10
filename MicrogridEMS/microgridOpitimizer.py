@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import *
 import scipy.linalg
+import scipy.optimize as opt
 
 def optimizer(hp,step,prices,demand,profile,S0C0,restrictions):
     #przeskalowanie minut na godziny
@@ -14,7 +15,8 @@ def optimizer(hp,step,prices,demand,profile,S0C0,restrictions):
 
     f = np.zeros(x*hp)
     Aeq = np.zeros((yeq*hp,x*hp))
-    beq = np.zeros((yeq*hp,1))
+    beq = np.zeros(yeq*hp)
+    bn = []
     j = 0
     i = 0
 
@@ -46,10 +48,22 @@ def optimizer(hp,step,prices,demand,profile,S0C0,restrictions):
         else:
             beq[i+3] = 0
 
+        # Ograniczenia brzegowe
+        bn.append((0,profile[it]))
+        bn.append((0,profile[it]))
+        bn.append((0,profile[it]))
+        bn.append((0,restrictions[1]))
+        bn.append((0,restrictions[1]))
+        bn.append((0,demand[it]))
+        bn.append((0,restrictions[0]))
+        bn.append((0,demand[it]))
+        bn.append((0,restrictions[0]))
+        bn.append((restrictions[3],restrictions[2]))
+
         j = j + x;
         i = i + yeq
 
 
-        
-    return Aeq
+    res = opt.linprog(f,A_eq=Aeq,b_eq=beq,bounds=bn)
+    return res
     
