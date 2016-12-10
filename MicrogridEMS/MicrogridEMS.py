@@ -5,7 +5,7 @@ import scipy.optimize as opt
 import microgridOpitimizer as ems
 import getDatas
 
-hp, numberOfLoads = 2, 5
+hp, numberOfLoads = 10, 5
 load = 3
 
 demand = getDatas.parseFloat('demand.txt',numberOfLoads)
@@ -19,7 +19,7 @@ res = ems.optimizer(hp,60,prices,demand[load],profiles[load],SOC[load],restricti
 x=[]
 j = 0
 for i in range(0,hp):
-    x.append(res.x[j:(j+9)])
+    x.append(res.x[j:(j+10)])
     j = j+10
 
 for row in x:
