@@ -12,8 +12,8 @@ def optimizer(hp,step,prices,demand,profile,SOC0,restrictions):
 
     # inicjalizacja macierzy
     f = np.zeros(x*hp)
-    Aeq = np.zeros((yeq*hp,x*hp))
-    beq = np.zeros(yeq*hp)
+    Aeq = np.zeros((y*hp,x*hp))
+    beq = np.zeros(y*hp)
     bn = []
     
     j = 0
@@ -61,7 +61,7 @@ def optimizer(hp,step,prices,demand,profile,SOC0,restrictions):
         bn.append((0,restrictions[0]))
         bn.append((restrictions[3],restrictions[2]))
 
-        j = j + x;
+        j = j + x
         i = i + y
 
         np.savetxt('Aeq.txt',Aeq,fmt='%.3f',delimiter='\t',newline='\r\n')
