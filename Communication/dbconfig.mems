@@ -1,0 +1,4 @@
+host=localhost
+db=mems-webpanel
+password=root
+user=root
