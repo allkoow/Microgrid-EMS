@@ -1,29 +1,30 @@
 import numpy as np
 from numpy import *
-import microgridOpitimizer as ems
-import getDatas
+import moptimizer as ems
+import dataoperation as do
 
-hp, numberOfLoads = 24, 1
-load = 1
+information = dict()
 
-demand = getDatas.parseFloat('demand.txt',numberOfLoads)
-prices = getDatas.parseFloat('prices.txt',3)
-profiles = getDatas.parseFloat('profiles.txt',numberOfLoads)
-SOC = getDatas.parseFloat('SOC0.txt',numberOfLoads)
-restrictions = getDatas.parseFloat('restrictions.txt',numberOfLoads)
+information['prediction_horizon'] = 24
+information['demand'] = do.parsefloat('files/demand.txt')
+information['profile'] = do.parsefloat('files/profiles.txt')
+information['restrictions'] = do.parsefloat('files/restrictions.txt')
+information['prices'] = do.parsefloat('files/prices.txt', 3)
+information['SOC0'] = do.parsefloat('files/SOC0.txt')
 
-res = ems.optimizer(hp,60,prices,demand[load-1],profiles[load-1],SOC[load-1],restrictions[load-1])
+results = ems.optimizer(information)
 
-x=[]
-j = 0
-for i in range(0,hp):
-    x.append(res.x[j:(j+10)])
-    j = j+10
+np.savetxt('optimization_task/results.txt', results, fmt='%.3f', delimiter=' ', newline='\r\n')
 
-for row in x:
-    print(row)
+needs_and_offers = dict()
+needs_and_offers['res_to_microgrid'] = results[:, 2]
+needs_and_offers['es_to_microgrid'] = results[:, 4]
+needs_and_offers['microgrid_to_load'] = results[:, 5]
+needs_and_offers['microgrid_to_es'] = results[:, 6]
 
-np.savetxt('res.txt',x,fmt='%.3f',delimiter=' ',newline='\r\n')
+do.printcolumn(needs_and_offers['res_to_microgrid'])
+
+
 
 
 

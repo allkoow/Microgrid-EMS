@@ -3,7 +3,15 @@ from numpy import *
 import scipy.linalg
 import scipy.optimize as opt
 
-def optimizer(hp,step,prices,demand,profile,SOC0,restrictions):
+def optimizer(information, step=60):
+    
+    hp = information['prediction_horizon']
+    prices = information['prices']
+    demand = information['demand']
+    profile = information['profile']
+    SOC0 = information['SOC0']
+    restrictions = information['restrictions']
+
     #przeskalowanie minut na godziny
     step = step / 60
 
@@ -64,9 +72,17 @@ def optimizer(hp,step,prices,demand,profile,SOC0,restrictions):
         j = j + x
         i = i + y
 
-        np.savetxt('Aeq.txt',Aeq,fmt='%.3f',delimiter='\t',newline='\r\n')
-        np.savetxt('beq.txt',beq,fmt='%.3f',delimiter=' ',newline='\r\n')
+        np.savetxt('optimization_task/Aeq.txt', Aeq,fmt='%.3f', delimiter='\t', newline='\r\n')
+        np.savetxt('optimization_task/beq.txt', beq,fmt='%.3f', delimiter=' ',  newline='\r\n')
     
-    res = opt.linprog(f,A_eq=Aeq,b_eq=beq,bounds=bn)
+    results = opt.linprog(f, A_eq=Aeq, b_eq=beq, bounds=bn)
+    
+    res = np.empty([information['prediction_horizon'], x])
+    
+    j = 0
+    for i in range(0, information['prediction_horizon']):
+        res[i] = results.x[j:(j+10)]
+        j = j+10
+    
     return res
     

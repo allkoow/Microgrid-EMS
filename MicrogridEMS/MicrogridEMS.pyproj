@@ -22,11 +22,11 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="getDatas.py">
+    <Compile Include="dataoperation.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MicrogridEMS.py" />
-    <Compile Include="microgridOpitimizer.py">
+    <Compile Include="moptimizer.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
