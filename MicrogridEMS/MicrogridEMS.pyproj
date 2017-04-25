@@ -25,8 +25,11 @@
     <Compile Include="dataoperation.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="HouseholdAgent.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MicrogridEMS.py" />
-    <Compile Include="moptimizer.py">
+    <Compile Include="Optimizer.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
