@@ -1,5 +1,5 @@
 import dataoperation as do
-from Optimizer import Optimizer
+from Optimization import *
 
 class HouseholdAgent(object):
     def __init__(self, config_path = "files/config.txt"):
@@ -12,14 +12,19 @@ class HouseholdAgent(object):
     def optimize(self):
         self.optimizer.calculate()
         
-        self.needs.m_u.power = self.optimizer.results[:, self.optimizer.Variable.m_u]
-        self.needs.m_es.power = self.optimizer.results[:, self.optimizer.Variable.m_es]
+        self.needs.m_u.power = self.optimizer.results[:, Variable.m_u]
+        self.needs.m_es.power = self.optimizer.results[:, Variable.m_es]
 
-        self.offers.res_m.power = self.optimizer.results[:, self.optimizer.Variable.res_m]
-        self.offers.es_m.power = self.optimizer.results[:, self.optimizer.Variable.es_m]
+        self.offers.res_m.power = self.optimizer.results[:, Variable.res_m]
+        self.offers.es_m.power = self.optimizer.results[:, Variable.es_m]
 
         #TODO: mechanizm ustalania cen dla ofert
 
+    def set_prediction_horizon(self, hp):
+        if hp <= len(self.optimizer.model.demand):
+            self.optimizer.model.hp = hp
+        else:
+            print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
 
 class TradeInfo(object):
     def __init__(self):
