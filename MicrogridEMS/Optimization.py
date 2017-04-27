@@ -19,6 +19,9 @@ class Model(object):
         self.variables_number = 10
         self.restr_number = 4
 
+        self.prepare_matrixes()
+
+    def prepare_matrixes(self):
         self.objective = np.zeros(self.variables_number * self.hp)
         self.Aeq = np.zeros((self.restr_number * self.hp, self.variables_number * self.hp))
         self.beq = np.zeros(self.restr_number * self.hp)
@@ -129,6 +132,9 @@ class Optimizer(object):
         np.savetxt(self.model.paths['results'], self.results, fmt='%.3f', delimiter=' ', newline='\r\n')
         print('Wynik optymalizacji zapisano do pliku.')
 
+    def clear_task(self):
+        self.results = np.empty([self.model.hp, self.model.variables_number])
+        self.model.prepare_matrixes()
 
 class Variable(IntEnum):
         res_u = 0

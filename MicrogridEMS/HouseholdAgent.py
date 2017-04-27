@@ -10,6 +10,7 @@ class HouseholdAgent(object):
         self.offers = Offers()
 
     def optimize(self):
+        self.optimizer.clear_task()
         self.optimizer.calculate()
         
         self.needs.m_u.power = self.optimizer.results[:, Variable.m_u]
@@ -20,6 +21,8 @@ class HouseholdAgent(object):
 
         #TODO: mechanizm ustalania cen dla ofert
 
+    def set_prediction_horizon(self, hp):
+        self.optimizer.model.hp = hp
 
 class TradeInfo(object):
     def __init__(self):
