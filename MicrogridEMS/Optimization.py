@@ -15,7 +15,7 @@ class Model(object):
         self.restr = do.parsefloat(self.paths['restr'])
         self.soc = do.parsefloat(self.paths['soc'])
 
-        self.hp = 24
+        self.hp = len(self.demand)
         self.variables_number = 10
         self.restr_number = 4
 

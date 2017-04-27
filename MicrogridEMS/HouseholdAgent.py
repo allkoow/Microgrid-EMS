@@ -21,7 +21,10 @@ class HouseholdAgent(object):
         #TODO: mechanizm ustalania cen dla ofert
 
     def set_prediction_horizon(self, hp):
-        self.optimizer.model.hp = hp
+        if hp <= len(self.optimizer.model.demand):
+            self.optimizer.model.hp = hp
+        else:
+            print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
 
 class TradeInfo(object):
     def __init__(self):
