@@ -3,13 +3,14 @@ from numpy import *
 import numpy as np
 import scipy.linalg
 import scipy.optimize as opt
+from enum import IntEnum
 
 class Optimizer(object):
 
     def __init__(self, config = 'files/config.txt'):
         self.paths = do.getpaths(config)
+        
         self.model = dict()
-
         self.model['demand'] = do.parsefloat(self.paths['demand'])
         self.model['prices'] = do.parsefloat(self.paths['prices'], 3)
         self.model['profile'] = do.parsefloat(self.paths['profile'])
@@ -24,73 +25,145 @@ class Optimizer(object):
         self.optinfo = []
         self.results = np.empty([self.hp, self.variables_number])
 
+
+    class Variable(IntEnum):
+        res_u = 0
+        res_es = 1
+        res_m = 2
+        es_u = 3
+        es_m = 4
+        m_u = 5
+        m_es = 6
+        g_u = 7
+        g_es = 8
+        soc = 9
+        previous_soc = -1
+
+    class Price(IntEnum):
+        from_grid = 0
+        to_microgrid = 1
+        from_microgrid = 2
+
+    class Equation(IntEnum):
+        load_balance = 0
+        res_balance = 1
+        soc = 2
+        surplus_sale = 3
+
+    class Restr(IntEnum):
+        max_charge = 0
+        max_discharge = 1
+        max_soc = 2
+        min_soc = 3
+        discharge_coef = 4
+        efficiency_coef = 5
+        capacity = 6
+
     def calculate(self):
-        hp = self.hp
-        prices = self.model['prices']
+        
+        objective = self.make_objective_function()
+        Aeq, beq, bn = self.make_constraints()
+
+        self.optinfo = opt.linprog(objective, A_eq=Aeq, b_eq=beq, bounds=bn)
+        
+        print(self.optinfo.message)
+        
+        self.saveresults()
+
+    
+    def make_objective_function(self):
+            prices = self.model['prices']
+            objective = np.zeros(self.variables_number * self.hp)
+
+            j, i = 0, 0
+
+            for period in range(0, self.hp):
+                # 1. koszt energii z sieci dystrybucyjnej
+                objective[ix_([j+self.Variable.g_u,
+                               j+self.Variable.g_es])] = prices[self.Price.from_grid][period]
+                # 2. koszt energii kupionej z mikrosieci
+                objective[ix_([j+self.Variable.m_u,
+                               j+self.Variable.m_es])] = prices[self.Price.from_microgrid][period]
+
+                j += self.variables_number
+                i += self.restr_number
+
+            return objective
+
+
+    def make_constraints(self):
         demand = self.model['demand']
         profile = self.model['profile']
         SOC0 = self.model['soc']
         restr = self.model['restr']
 
-        #przeskalowanie minut na godziny
-        step = self.step / 60
-
-        # liczba zmiennych w zadaniu dla jednego kroku i ogr. 
-        x, y = self.variables_number, self.restr_number
-
-        # inicjalizacja macierzy
-        f = np.zeros(x*hp)
-        Aeq = np.zeros((y*hp, x*hp))
-        beq = np.zeros(y*hp)
+        Aeq = np.zeros((self.restr_number * self.hp, self.variables_number * self.hp))
+        beq = np.zeros(self.restr_number * self.hp)
         bn = []
-    
-        j, i = 0, 0
 
-        for it in range(0, hp):
-            # 1. koszt energii z sieci dystrybucyjnej
-            f[(j+7):(j+9)] = prices[0][it]*step
-            # 2. koszt energii kupionej z mikrosieci
-            f[(j+5):(j+7)] = prices[2][it]*step
+        i, j = 0, 0
 
-            # ograniczenia rownosciowe
+        for period in range(0, self.hp):
             # 1. Bilans energetyczny odbioru
-            Aeq[i][ix_([j+0,j+3,j+5,j+7])] = 1
-            beq[i] = demand[it]
-            # 2. Bilans energetyczny OZE
-            Aeq[i+1][(j+0):(j+3)] = 1
-            beq[i+1] = profile[it]
-            # 3. Stan zasobnika
-            Aeq[i+2][j+9] = 1
-            Aeq[i+2][ix_([j+3,j+4])] = 1/restr[6]
-            Aeq[i+2][ix_([j+1,j+6,j+8])] = -restr[5]/restr[6]
+            Aeq[i+self.Equation.load_balance][ix_([j+self.Variable.res_u,
+                                                   j+self.Variable.es_u,
+                                                   j+self.Variable.m_u,
+                                                   j+self.Variable.g_u])] = 1
+            
+            beq[i+self.Equation.load_balance] = demand[period]
 
-            if it>0:
-                Aeq[i+2][j-1] = -restr[4]
+            # 2. Bilans energetyczny OZE
+            Aeq[i+self.Equation.res_balance][ix_([j+self.Variable.res_u,
+                                                  j+self.Variable.res_es,
+                                                  j+self.Variable.res_m])] = 1
+            
+            beq[i+self.Equation.res_balance] = profile[period]
+
+            # 3. Stan zasobnika
+            Aeq[i+self.Equation.soc][j+self.Variable.soc] = 1
+            
+            Aeq[i+self.Equation.soc][ix_([j+self.Variable.es_u, 
+                                          j+self.Variable.es_m])] = 1/restr[self.Restr.capacity]
+            
+            Aeq[i+self.Equation.soc][ix_([j+self.Variable.res_es,
+                                          j+self.Variable.m_es,
+                                          j+self.Variable.g_es])] = -restr[self.Restr.efficiency_coef]/restr[self.Restr.capacity]
+
+            if period>0:
+                Aeq[i+self.Equation.soc][j+self.Variable.previous_soc] = -restr[self.Restr.discharge_coef]
             else:
-                beq[i+2] = SOC0[0]
+                beq[i+self.Equation.soc] = SOC0[0]
 
             # 4. Sprzedaż nadwyżek
-            Aeq[i+3][ix_([j+2,j+4])] = 1
-            if profile[it]>demand[it]:
-                beq[i+3] = profile[it]-demand[it]
+            Aeq[i+self.Equation.surplus_sale][ix_([j+self.Variable.res_m,
+                                                   j+self.Variable.es_m])] = 1
+            
+            if profile[period]>demand[period]:
+                beq[i+self.Equation.surplus_sale] = profile[period]-demand[period]
             else:
-                beq[i+3] = 0
+                beq[i+self.Equation.surplus_sale] = 0
 
             # Ograniczenia brzegowe
-            bn.extend([(0,profile[it]), (0,profile[it]), (0,profile[it])])
-            bn.extend([(0,restr[1]), (0,restr[1])])
-            bn.extend([(0,demand[it]), (0,restr[1]), (0,demand[it]), (0,restr[1])])
-            bn.extend([(restr[3], restr[2])])
+            bn.extend([(0, profile[period]), 
+                       (0, profile[period]), 
+                       (0, profile[period])])
+            
+            bn.extend([(0, restr[self.Restr.max_charge]), 
+                       (0, restr[self.Restr.max_charge])])
+            
+            bn.extend([(0, demand[period]), 
+                       (0, restr[self.Restr.max_charge]), 
+                       (0, demand[period]), 
+                       (0, restr[self.Restr.max_charge])])
+            
+            bn.append((restr[self.Restr.min_soc], restr[self.Restr.max_soc]))
 
-            j += x
-            i += y
+            j += self.variables_number
+            i += self.restr_number
 
-            #np.savetxt('optimization_task/Aeq.txt', Aeq,fmt='%.3f', delimiter='\t', newline='\r\n')
-            #np.savetxt('optimization_task/beq.txt', beq,fmt='%.3f', delimiter=' ',  newline='\r\n')
-    
-        self.optinfo = opt.linprog(f, A_eq=Aeq, b_eq=beq, bounds=bn)
-        self.saveresults()
-    
+        return (Aeq, beq, bn)
+
+
     def saveresults(self):
         j = 0
         for i in range(0, self.hp):
@@ -99,3 +172,6 @@ class Optimizer(object):
 
         np.savetxt(self.paths['results'], self.results, fmt='%.3f', delimiter=' ', newline='\r\n')
         print('Wynik optymalizacji zapisano do pliku.')
+
+
+    
