@@ -32,6 +32,9 @@
     <Compile Include="Optimizer.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TradeInfo.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
