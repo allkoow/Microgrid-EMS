@@ -29,7 +29,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MicrogridEMS.py" />
-    <Compile Include="Optimizer.py">
+    <Compile Include="Optimization.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
