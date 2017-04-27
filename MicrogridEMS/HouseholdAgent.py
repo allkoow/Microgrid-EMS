@@ -10,7 +10,6 @@ class HouseholdAgent(object):
         self.offers = Offers()
 
     def optimize(self):
-        self.optimizer.clear_task()
         self.optimizer.calculate()
         
         self.needs.m_u.power = self.optimizer.results[:, Variable.m_u]

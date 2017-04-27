@@ -114,6 +114,7 @@ class Optimizer(object):
         self.results = np.empty([self.model.hp, self.model.variables_number])
 
     def calculate(self):
+        self.clear_task()
         self.optinfo = opt.linprog(self.model.objective, 
                                    A_eq = self.model.Aeq, 
                                    b_eq = self.model.beq, 
