@@ -1,5 +1,5 @@
 import dataoperation as do
-from Optimization import *
+from MicroinstallationOptimization import *
 
 class HouseholdAgent(object):
     def __init__(self, id, folder_with_files = "files/agents/"):
