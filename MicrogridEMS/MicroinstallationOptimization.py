@@ -11,7 +11,7 @@ class MicroinstallationModel(Model):
                                                      equality_constr_num = 4, 
                                                      prediction_horizon = len(self.demand))
 
-        self.check_trade_bounds()
+        self.fill_trade_bounds_with_none()
 
     def get_data_from_files(self):
         self.demand = do.get_data_from_file(self.paths['demand'])
@@ -21,12 +21,15 @@ class MicroinstallationModel(Model):
         self.soc = do.get_data_from_file(self.paths['soc'])
         self.trade_bounds = do.get_data_from_file(self.paths['trade_bounds'], 2)
 
-    def check_trade_bounds(self):
+    def is_trade_bounds_empty(self):
         if not self.trade_bounds:
-            self.trade_bounds = [[], []]
-            for i in range(0, self.prediction_horizon):
-                self.trade_bounds[0].append(None)
-                self.trade_bounds[1].append(None)
+            self.fill_trade_bounds_with_none()
+        
+    def fill_trade_bounds_with_none(self):
+        self.trade_bounds = [[], []]
+        for i in range(0, self.prediction_horizon):
+            self.trade_bounds[0].append(None)
+            self.trade_bounds[1].append(None)
 
     def make_objective(self):
         j = 0
@@ -107,7 +110,7 @@ class MicroinstallationOptimizer(Optimizer):
 
     def calculate(self):
         self.model.get_data_from_files()
-        self.model.check_trade_bounds()
+        self.model.is_trade_bounds_empty()
         self.prepare_task()
         
         self.optinfo = opt.linprog(self.model.objective, 

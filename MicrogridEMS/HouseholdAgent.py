@@ -5,7 +5,9 @@ class HouseholdAgent(object):
     def __init__(self, id, folder_with_files = "files/agents/"):
         self.id = id
         self.config_path = folder_with_files + id + "/config.txt"
+        
         self.optimizer = MicroinstallationOptimizer(self.config_path)
+        self.clear_trade_bounds()
         
         self.needs = Needs()
         self.offers = Offers()

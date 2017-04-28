@@ -5,15 +5,17 @@ def get_data_from_file(path, line_numbers=1):
     file = open(path,'r')
     data = []
     
-    for i in range(0,line_numbers):
+    for i in range(0, line_numbers):
         line = file.readline()
         data.append([float(x) for x in line.split()])
 
     file.close()
 
+    if not data[0]:
+        return []
     if line_numbers == 1:
         return data[0]
-    else:
+    if line_numbers > 1:
         return data
 
 
