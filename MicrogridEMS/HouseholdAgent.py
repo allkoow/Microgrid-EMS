@@ -2,9 +2,10 @@ import dataoperation as do
 from Optimization import *
 
 class HouseholdAgent(object):
-    def __init__(self, config_path = "files/config.txt"):
-        self.config_path = config_path
-        self.optimizer = Optimizer(self.config_path)
+    def __init__(self, id, folder_with_files = "files/agents/"):
+        self.id = id
+        self.config_path = folder_with_files + id + "/config.txt"
+        self.optimizer = MicroinstallationOptimizer(self.config_path)
         
         self.needs = Needs()
         self.offers = Offers()

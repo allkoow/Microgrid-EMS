@@ -3,24 +3,12 @@ from numpy import *
 import dataoperation as do
 from HouseholdAgent import HouseholdAgent
 
-
-agent = HouseholdAgent()
+agent = HouseholdAgent(id = "001")
 
 agent.set_prediction_horizon(24)
 agent.optimize()
 
 do.printcolumn(agent.offers.res_m.power)
-
-
-
-
-
-
-
-
-
-
-
 
 
 

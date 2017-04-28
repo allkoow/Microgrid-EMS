@@ -1,0 +1,9 @@
+folder: files/
+demand: demand.txt
+profile: profiles.txt
+restr: restr.txt
+prices: prices.txt
+soc: SOC0.txt
+matrix_A: aeq.txt
+matrix_B: beq.txt
+micro_opt_results: micro_opt_results.txt
