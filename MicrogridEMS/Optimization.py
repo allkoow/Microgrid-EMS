@@ -57,8 +57,7 @@ class Optimizer(ABC):
     
     def save_results(self, file_path):
         self.organize_results_into_square_matrix()
-
-        np.savetxt(file_path, self.results, fmt='%.3f', delimiter=' ', newline='\r\n')
+        do.save_to_file(file_path, self.results)
         print('Wynik optymalizacji zapisano do pliku.')
 
     def organize_results_into_square_matrix(self):

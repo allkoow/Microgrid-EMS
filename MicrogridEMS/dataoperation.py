@@ -1,3 +1,5 @@
+import numpy as np
+
 def get_data_from_file(path, line_numbers=1):
     
     file = open(path,'r')
@@ -38,4 +40,6 @@ def get_paths(config):
 def get_folder_path(full_path):
     separate = full_path.split('/')
     return "/".join(separate[:-1]) + "/"
-    
+ 
+def save_to_file(file_path, data):
+    np.savetxt(file_path, data, fmt='%.3f', delimiter=' ', newline='\r\n')

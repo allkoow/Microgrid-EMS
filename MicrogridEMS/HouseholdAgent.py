@@ -10,8 +10,7 @@ class HouseholdAgent(object):
         self.needs = Needs()
         self.offers = Offers()
 
-    def optimize(self, bounds_power_from_microgrid = (None, None)):
-        self.optimizer.set_bounds_power_from_microgrid(bounds_power_from_microgrid)
+    def optimize(self):
         self.optimizer.calculate()
         
         self.needs.m_u.power = self.optimizer.results[:, Variable.m_u]
@@ -27,6 +26,13 @@ class HouseholdAgent(object):
             self.optimizer.model.prediction_horizon = prediction_horizon
         else:
             print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
+
+    def clear_trade_bounds(self):
+        do.save_to_file(self.optimizer.model.paths['trade_bounds'], [])
+
+    def add_trade_bounds(self, bounds):
+        do.save_to_file(self.optimizer.model.paths['trade_bounds'], bounds)
+
 
 class TradeInfo(object):
     def __init__(self):

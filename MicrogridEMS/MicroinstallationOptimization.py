@@ -3,23 +3,30 @@ from Optimization import *
 class MicroinstallationModel(Model):
     def __init__(self, config_path):
         self.paths = do.get_paths(config_path)
-        self.prepare_model()
         
+        self.get_data_from_files()
+
         super(MicroinstallationModel, self).__init__(variables_num = 10, 
                                                      inequality_constr_num = 0, 
                                                      equality_constr_num = 4, 
                                                      prediction_horizon = len(self.demand))
 
-        self.bounds_power_from_microgrid = (None, None)
+        self.check_trade_bounds()
 
-        self.prepare_matrixes()
-    
-    def prepare_model(self):
+    def get_data_from_files(self):
         self.demand = do.get_data_from_file(self.paths['demand'])
         self.price_from_grid = do.get_data_from_file(self.paths['prices'])
         self.profile = do.get_data_from_file(self.paths['profile'])
         self.restr = do.get_data_from_file(self.paths['restr'])
         self.soc = do.get_data_from_file(self.paths['soc'])
+        self.trade_bounds = do.get_data_from_file(self.paths['trade_bounds'], 2)
+
+    def check_trade_bounds(self):
+        if not self.trade_bounds:
+            self.trade_bounds = [[], []]
+            for i in range(0, self.prediction_horizon):
+                self.trade_bounds[0].append(None)
+                self.trade_bounds[1].append(None)
 
     def make_objective(self):
         j = 0
@@ -64,7 +71,7 @@ class MicroinstallationModel(Model):
             else:
                 self.beq[i+Equation.soc] = self.soc[0]
 
-            # 4. Sprzeda¿ nadwy¿ek
+            # 4. Sprzedaz nadwyzek
             self.Aeq[i+Equation.surplus_sale][ix_([j+Variable.res_m,
                                                    j+Variable.es_m])] = 1
             
@@ -81,8 +88,8 @@ class MicroinstallationModel(Model):
             self.bounds[j+Variable.es_u] = (0, self.restr[Restr.max_charge])
             self.bounds[j+Variable.es_m] = (0, self.restr[Restr.max_charge])
             
-            self.bounds[j+Variable.m_u] = (0, self.bounds_power_from_microgrid[0])
-            self.bounds[j+Variable.m_es] = (0, self.bounds_power_from_microgrid[1])
+            self.bounds[j+Variable.m_u] = (0, self.trade_bounds[0][period])
+            self.bounds[j+Variable.m_es] = (0, self.trade_bounds[1][period])
 
             self.bounds[j+Variable.g_u] = (0, self.restr[Restr.connection_constraint])
             self.bounds[j+Variable.g_es] = (0, self.restr[Restr.max_charge])
@@ -99,8 +106,10 @@ class MicroinstallationOptimizer(Optimizer):
         super(MicroinstallationOptimizer, self).__init__()
 
     def calculate(self):
+        self.model.get_data_from_files()
+        self.model.check_trade_bounds()
         self.prepare_task()
-
+        
         self.optinfo = opt.linprog(self.model.objective, 
                                    A_eq = self.model.Aeq, 
                                    b_eq = self.model.beq, 
@@ -109,9 +118,6 @@ class MicroinstallationOptimizer(Optimizer):
         print(self.optinfo.message)
         
         self.save_results(self.model.paths['results'])
-
-    def set_bounds_power_from_microgrid(self, bounds_power_from_microgrid):
-        self.model.bounds_power_from_microgrid = bounds_power_from_microgrid
 
 class Restr(IntEnum):
         max_charge = 0
