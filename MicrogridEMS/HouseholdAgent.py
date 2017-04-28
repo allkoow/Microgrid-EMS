@@ -7,7 +7,7 @@ class HouseholdAgent(object):
         self.config_path = folder_with_files + id + "/config.txt"
         
         self.optimizer = MicroinstallationOptimizer(self.config_path)
-        self.clear_trade_bounds()
+        self.change_trade_bounds()
         
         self.needs = Needs()
         self.offers = Offers()
@@ -29,10 +29,7 @@ class HouseholdAgent(object):
         else:
             print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
 
-    def clear_trade_bounds(self):
-        do.save_to_file(self.optimizer.model.paths['trade_bounds'], [])
-
-    def add_trade_bounds(self, bounds):
+    def change_trade_bounds(self, bounds=[]):
         do.save_to_file(self.optimizer.model.paths['trade_bounds'], bounds)
 
 
