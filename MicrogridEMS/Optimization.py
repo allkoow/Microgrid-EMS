@@ -56,13 +56,16 @@ class Optimizer(ABC):
         self.results = np.empty([self.model.prediction_horizon, self.model.variables_num])
     
     def save_results(self, file_path):
-        j = 0
-        for i in range(0, self.model.hp):
-            self.results[i] = self.optinfo.x[j:(j+self.model.variables_num)]
-            j += self.model.variables_num
+        self.organize_results_into_square_matrix()
 
         np.savetxt(file_path, self.results, fmt='%.3f', delimiter=' ', newline='\r\n')
         print('Wynik optymalizacji zapisano do pliku.')
+
+    def organize_results_into_square_matrix(self):
+        j = 0
+        for i in range(0, self.model.prediction_horizon):
+            self.results[i] = self.optinfo.x[j:(j+self.model.variables_num)]
+            j += self.model.variables_num
 
 class Variable(IntEnum):
         res_u = 0

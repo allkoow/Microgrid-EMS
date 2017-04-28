@@ -10,6 +10,8 @@ class MicroinstallationModel(Model):
                                                      equality_constr_num = 4, 
                                                      prediction_horizon = len(self.demand))
 
+        self.bounds_power_from_microgrid = (None, None)
+
         self.prepare_matrixes()
     
     def prepare_model(self):
@@ -79,8 +81,8 @@ class MicroinstallationModel(Model):
             self.bounds[j+Variable.es_u] = (0, self.restr[Restr.max_charge])
             self.bounds[j+Variable.es_m] = (0, self.restr[Restr.max_charge])
             
-            self.bounds[j+Variable.m_u] = (0, None)
-            self.bounds[j+Variable.m_es] = (0, None)
+            self.bounds[j+Variable.m_u] = (0, self.bounds_power_from_microgrid[0])
+            self.bounds[j+Variable.m_es] = (0, self.bounds_power_from_microgrid[1])
 
             self.bounds[j+Variable.g_u] = (0, self.restr[Restr.connection_constraint])
             self.bounds[j+Variable.g_es] = (0, self.restr[Restr.max_charge])
@@ -107,6 +109,9 @@ class MicroinstallationOptimizer(Optimizer):
         print(self.optinfo.message)
         
         self.save_results(self.model.paths['results'])
+
+    def set_bounds_power_from_microgrid(self, bounds_power_from_microgrid):
+        self.model.bounds_power_from_microgrid = bounds_power_from_microgrid
 
 class Restr(IntEnum):
         max_charge = 0

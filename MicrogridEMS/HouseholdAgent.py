@@ -10,7 +10,8 @@ class HouseholdAgent(object):
         self.needs = Needs()
         self.offers = Offers()
 
-    def optimize(self):
+    def optimize(self, bounds_power_from_microgrid = (None, None)):
+        self.optimizer.set_bounds_power_from_microgrid(bounds_power_from_microgrid)
         self.optimizer.calculate()
         
         self.needs.m_u.power = self.optimizer.results[:, Variable.m_u]
@@ -21,9 +22,9 @@ class HouseholdAgent(object):
 
         #TODO: mechanizm ustalania cen dla ofert
 
-    def set_prediction_horizon(self, hp):
-        if hp <= len(self.optimizer.model.demand):
-            self.optimizer.model.hp = hp
+    def set_prediction_horizon(self, prediction_horizon):
+        if prediction_horizon <= len(self.optimizer.model.demand):
+            self.optimizer.model.prediction_horizon = prediction_horizon
         else:
             print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
 
