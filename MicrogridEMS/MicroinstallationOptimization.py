@@ -4,7 +4,7 @@ class MicroinstallationModel(Model):
     def __init__(self, config_path):
         self.paths = do.get_paths(config_path)
         
-        self.get_data_from_files()
+        self.load_data_from_files()
 
         super(MicroinstallationModel, self).__init__(variables_num = 10, 
                                                      inequality_constr_num = 0, 
@@ -13,7 +13,7 @@ class MicroinstallationModel(Model):
 
         self.fill_trade_bounds_with_none()
 
-    def get_data_from_files(self):
+    def load_data_from_files(self):
         self.demand = do.get_data_from_file(self.paths['demand'])
         self.price_from_grid = do.get_data_from_file(self.paths['prices'])
         self.profile = do.get_data_from_file(self.paths['profile'])
@@ -109,7 +109,7 @@ class MicroinstallationOptimizer(Optimizer):
         super(MicroinstallationOptimizer, self).__init__()
 
     def calculate(self):
-        self.model.get_data_from_files()
+        self.model.load_data_from_files()
         self.model.is_trade_bounds_empty()
         self.prepare_task()
         
