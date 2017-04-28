@@ -6,6 +6,33 @@ import scipy.optimize as opt
 from enum import IntEnum
 from abc import ABC
 
+class Optimizer(ABC):
+    def __init__(self):
+        self.optinfo = []
+        self.clear_results()
+
+    def calculate(self):
+        pass
+
+    def prepare_task(self):
+        self.clear_results()
+        self.model.prepare_matrixes()
+
+    def clear_results(self):
+        self.results = np.empty([self.model.prediction_horizon, self.model.variables_num])
+    
+    def save_results(self, file_path):
+        self.organize_results_into_square_matrix()
+        do.save_to_file(file_path, self.results)
+        print('Wynik optymalizacji zapisano do pliku.')
+
+    def organize_results_into_square_matrix(self):
+        j = 0
+        for i in range(0, self.model.prediction_horizon):
+            self.results[i] = self.optinfo.x[j:(j+self.model.variables_num)]
+            j += self.model.variables_num
+
+
 class Model(ABC):
     def __init__(self, variables_num, inequality_constr_num, equality_constr_num, prediction_horizon):
         self.variables_num = variables_num
@@ -40,31 +67,6 @@ class Model(ABC):
             self.A_ub = np.zeros((rows_in_inequalities_num, columns_num))
             self.b_ub = np.zeros(rows_in_inequalities_num)
 
-class Optimizer(ABC):
-    def __init__(self):
-        self.optinfo = []
-        self.clear_results()
-
-    def calculate(self):
-        pass
-
-    def prepare_task(self):
-        self.clear_results()
-        self.model.prepare_matrixes()
-
-    def clear_results(self):
-        self.results = np.empty([self.model.prediction_horizon, self.model.variables_num])
-    
-    def save_results(self, file_path):
-        self.organize_results_into_square_matrix()
-        do.save_to_file(file_path, self.results)
-        print('Wynik optymalizacji zapisano do pliku.')
-
-    def organize_results_into_square_matrix(self):
-        j = 0
-        for i in range(0, self.model.prediction_horizon):
-            self.results[i] = self.optinfo.x[j:(j+self.model.variables_num)]
-            j += self.model.variables_num
 
 class Variable(IntEnum):
         res_u = 0

@@ -1,5 +1,25 @@
 from Optimization import *
 
+class MicroinstallationOptimizer(Optimizer):
+
+    def __init__(self, config_path):
+        self.model = MicroinstallationModel(config_path)
+        super(MicroinstallationOptimizer, self).__init__()
+
+    def calculate(self):
+        self.model.load_data_from_files()
+        self.model.is_trade_bounds_empty()
+        self.prepare_task()
+        
+        self.optinfo = opt.linprog(self.model.objective, 
+                                   A_eq = self.model.Aeq, 
+                                   b_eq = self.model.beq, 
+                                   bounds = self.model.bounds)
+        
+        print(self.optinfo.message)
+        
+        self.save_results(self.model.paths['results'])
+
 class MicroinstallationModel(Model):
     def __init__(self, config_path):
         self.paths = do.get_paths(config_path)
@@ -102,25 +122,6 @@ class MicroinstallationModel(Model):
             j += self.variables_num
             i += self.equality_constr_num
 
-class MicroinstallationOptimizer(Optimizer):
-
-    def __init__(self, config_path):
-        self.model = MicroinstallationModel(config_path)
-        super(MicroinstallationOptimizer, self).__init__()
-
-    def calculate(self):
-        self.model.load_data_from_files()
-        self.model.is_trade_bounds_empty()
-        self.prepare_task()
-        
-        self.optinfo = opt.linprog(self.model.objective, 
-                                   A_eq = self.model.Aeq, 
-                                   b_eq = self.model.beq, 
-                                   bounds = self.model.bounds)
-        
-        print(self.optinfo.message)
-        
-        self.save_results(self.model.paths['results'])
 
 class Restr(IntEnum):
         max_charge = 0
