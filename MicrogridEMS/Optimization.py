@@ -22,11 +22,11 @@ class Optimizer(ABC):
         self.results = np.empty([self.model.prediction_horizon, self.model.variables_num])
     
     def save_results(self, file_path):
-        self.organize_results_into_square_matrix()
+        self.organize_results_into_matrix()
         do.save_to_file(file_path, self.results)
         print('Wynik optymalizacji zapisano do pliku.')
 
-    def organize_results_into_square_matrix(self):
+    def organize_results_into_matrix(self):
         j = 0
         for i in range(0, self.model.prediction_horizon):
             self.results[i] = self.optinfo.x[j:(j+self.model.variables_num)]
