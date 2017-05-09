@@ -29,6 +29,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MicrogridEMS.py" />
+    <Compile Include="MicroinstallationOptimization.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Optimization.py">
       <SubType>Code</SubType>
     </Compile>

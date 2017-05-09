@@ -1,10 +1,13 @@
 import dataoperation as do
-from Optimization import *
+from MicroinstallationOptimization import *
 
 class HouseholdAgent(object):
-    def __init__(self, config_path = "files/config.txt"):
-        self.config_path = config_path
-        self.optimizer = Optimizer(self.config_path)
+    def __init__(self, id, folder_with_files = "files/agents/"):
+        self.id = id
+        self.config_path = folder_with_files + id + "/config.txt"
+        
+        self.optimizer = MicroinstallationOptimizer(self.config_path)
+        self.change_trade_bounds()
         
         self.needs = Needs()
         self.offers = Offers()
@@ -20,11 +23,15 @@ class HouseholdAgent(object):
 
         #TODO: mechanizm ustalania cen dla ofert
 
-    def set_prediction_horizon(self, hp):
-        if hp <= len(self.optimizer.model.demand):
-            self.optimizer.model.hp = hp
+    def set_prediction_horizon(self, prediction_horizon):
+        if prediction_horizon <= len(self.optimizer.model.demand):
+            self.optimizer.model.prediction_horizon = prediction_horizon
         else:
             print("Horyzont predykcji nie może przekraczać okresu, na który dokonano predykcji danych!")
+
+    def change_trade_bounds(self, bounds=[]):
+        do.save_to_file(self.optimizer.model.paths['trade_bounds'], bounds)
+
 
 class TradeInfo(object):
     def __init__(self):
